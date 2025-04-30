@@ -6,6 +6,42 @@ const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT || 10000;
 
+// In-memory storage for parking spots (for demonstration)
+let parkingSpots = [
+  {
+    id: 'spot1',
+    title: 'Downtown Parking',
+    description: 'Convenient downtown parking spot',
+    address: '123 Main St, Downtown',
+    location: {
+      type: 'Point',
+      coordinates: [72.8777, 19.0760] // Mumbai coordinates
+    },
+    price: 5.99,
+    totalSpots: 10,
+    availableSpots: 5,
+    features: ['Covered', 'Security', '24/7 Access'],
+    ownerId: 'user123',
+    images: ['https://placehold.co/600x400?text=Parking+Spot']
+  },
+  {
+    id: 'spot2',
+    title: 'Mall Parking',
+    description: 'Secure parking near shopping mall',
+    address: '456 Market Ave, City Center',
+    location: {
+      type: 'Point',
+      coordinates: [72.8856, 19.0822]
+    },
+    price: 4.50,
+    totalSpots: 15,
+    availableSpots: 8,
+    features: ['Covered', 'EV Charging'],
+    ownerId: 'user456',
+    images: ['https://placehold.co/600x400?text=Mall+Parking']
+  }
+];
+
 // CORS configuration with specific origins
 const corsOptions = {
   origin: [
@@ -25,6 +61,12 @@ app.use(express.json());
 // Logging middleware for debugging
 app.use((req, res, next) => {
   console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+  if (req.method === 'POST' || req.method === 'PUT') {
+    console.log('Request body:', JSON.stringify(req.body, null, 2));
+  }
+  if (req.headers.authorization) {
+    console.log('Auth header present:', req.headers.authorization.substring(0, 20) + '...');
+  }
   next();
 });
 
@@ -38,7 +80,10 @@ app.get('/', (req, res) => {
     routes: [
       { path: '/auth/login', method: 'POST', description: 'User login' },
       { path: '/auth/register', method: 'POST', description: 'User registration' },
-      { path: '/parkingspots', method: 'GET', description: 'Get parking spots' }
+      { path: '/parkingspots', method: 'GET', description: 'Get parking spots' },
+      { path: '/parkingspots', method: 'POST', description: 'Create a parking spot (admin)' },
+      { path: '/auth/ping', method: 'GET', description: 'Auth service status' },
+      { path: '/admin/dashboard', method: 'GET', description: 'Admin dashboard data' }
     ],
     adminCredentials: {
       email: 'admin@parkxigo.com',
@@ -117,7 +162,7 @@ app.get('/api/admin/dashboard', (req, res) => {
     status: 'ok',
     stats: {
       totalUsers: 256,
-      totalParkingSpots: 124,
+      totalParkingSpots: parkingSpots.length,
       activeBookings: 45,
       revenue: 12520
     },
@@ -128,47 +173,86 @@ app.get('/api/admin/dashboard', (req, res) => {
   });
 });
 
-// Mock parking spots handler
-const handleParkingSpots = (req, res) => {
-  res.json([
-    {
-      id: 'spot1',
-      title: 'Downtown Parking',
-      description: 'Convenient downtown parking spot',
-      address: '123 Main St, Downtown',
-      location: {
-        type: 'Point',
-        coordinates: [72.8777, 19.0760] // Mumbai coordinates
-      },
-      price: 5.99,
-      totalSpots: 10,
-      availableSpots: 5,
-      features: ['Covered', 'Security', '24/7 Access'],
-      ownerId: 'user123',
-      images: ['https://placehold.co/600x400?text=Parking+Spot']
-    },
-    {
-      id: 'spot2',
-      title: 'Mall Parking',
-      description: 'Secure parking near shopping mall',
-      address: '456 Market Ave, City Center',
-      location: {
-        type: 'Point',
-        coordinates: [72.8856, 19.0822]
-      },
-      price: 4.50,
-      totalSpots: 15,
-      availableSpots: 8,
-      features: ['Covered', 'EV Charging'],
-      ownerId: 'user456',
-      images: ['https://placehold.co/600x400?text=Mall+Parking']
-    }
-  ]);
+// Mock parking spots handler - GET
+const getParkingSpots = (req, res) => {
+  res.json(parkingSpots);
 };
 
-// Support both path patterns for parking spots
-app.get('/api/parkingspots', handleParkingSpots);
-app.get('/parkingspots', handleParkingSpots);
+// Support both path patterns for getting parking spots
+app.get('/api/parkingspots', getParkingSpots);
+app.get('/parkingspots', getParkingSpots);
+
+// Create a new parking spot - POST
+const createParkingSpot = (req, res) => {
+  try {
+    // Check for admin authorization
+    const token = req.headers.authorization;
+    if (!token || !token.includes('admin-token')) {
+      return res.status(401).json({ 
+        status: 'error', 
+        message: 'Admin authorization required to create parking spots' 
+      });
+    }
+    
+    // Generate a new ID
+    const newId = 'spot' + (parkingSpots.length + 1);
+    
+    // Create the new parking spot with data from request
+    const newSpot = {
+      id: newId,
+      ...req.body,
+      // Make sure location has the right structure if provided
+      location: req.body.location || {
+        type: 'Point',
+        coordinates: [72.8777, 19.0760] // Default coordinates
+      }
+    };
+    
+    // Add to our in-memory collection
+    parkingSpots.push(newSpot);
+    
+    // Return success with the created parking spot
+    res.status(201).json({
+      status: 'success',
+      message: 'Parking spot created successfully',
+      data: newSpot
+    });
+  } catch (error) {
+    console.error('Error creating parking spot:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Failed to create parking spot',
+      error: error.message
+    });
+  }
+};
+
+// Support both path patterns for creating parking spots
+app.post('/api/parkingspots', createParkingSpot);
+app.post('/parkingspots', createParkingSpot);
+
+// Get individual parking spot by ID
+app.get('/api/parkingspots/:id', (req, res) => {
+  const spot = parkingSpots.find(s => s.id === req.params.id);
+  if (!spot) {
+    return res.status(404).json({ 
+      status: 'error', 
+      message: `Parking spot with ID ${req.params.id} not found` 
+    });
+  }
+  res.json(spot);
+});
+
+app.get('/parkingspots/:id', (req, res) => {
+  const spot = parkingSpots.find(s => s.id === req.params.id);
+  if (!spot) {
+    return res.status(404).json({ 
+      status: 'error', 
+      message: `Parking spot with ID ${req.params.id} not found` 
+    });
+  }
+  res.json(spot);
+});
 
 // Error handling middleware
 app.use((err, req, res, next) => {
