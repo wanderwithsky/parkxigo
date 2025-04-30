@@ -10,6 +10,10 @@
   # Default build command
   command = "npm run build"
 
+# Environment variables
+[build.environment]
+  VITE_API_URL = "https://parkxigo.onrender.com"
+
 # Redirects for SPA routing
 [[redirects]]
   from = "/*"
