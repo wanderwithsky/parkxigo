@@ -4,13 +4,9 @@ services:
     env: node
     buildCommand: |
       npm install
-      cd backend
-      echo "Trying TypeScript build..."
-      npm run build || echo "TypeScript build failed, using fallback server"
-      mkdir -p dist
-      cp ../backend/dist-server.js dist/server.js
-      ls -la dist/
-    startCommand: npm start
+      cp backend/dist-server.js server.js
+      ls -la
+    startCommand: node server.js
     envVars:
       - key: NODE_ENV
         value: production

@@ -2,16 +2,17 @@
   "name": "parkxigo",
   "version": "1.0.0",
   "description": "A modern parking application",
-  "main": "backend/dist/server.js",
+  "main": "server.js",
   "scripts": {
-    "start": "cd backend && npm start",
+    "start": "node server.js",
     "install": "cd backend && npm install && cd ../frontend && npm install",
-    "build": "cd backend && npm run build && npm run ensure-server",
-    "postbuild": "cd backend && ls -la dist/",
-    "ensure-server": "node -e \"const fs=require('fs');const path=require('path');const dir='backend/dist';if(!fs.existsSync(dir)){fs.mkdirSync(dir,{recursive:true})};const file=path.join(dir,'server.js');if(!fs.existsSync(file)){fs.writeFileSync(file,'console.log(\\'Fallback server starting...\\');const express=require(\\'express\\');const app=express();const PORT=process.env.PORT||10000;app.get(\\'/\\',(req,res)=>res.json({status:\\'ok\\',message:\\'ParkXiGo API is running\\'}));app.listen(PORT,()=>console.log(`Server running on port ${PORT}`));')}\""
+    "build": "cd backend && npm run build && cp ../backend/dist-server.js ../server.js",
+    "postbuild": "ls -la && ls -la backend/dist/"
   },
   "dependencies": {
     "leaflet": "^1.9.4",
-    "react-leaflet": "^5.0.0"
+    "react-leaflet": "^5.0.0",
+    "express": "^4.21.2",
+    "cors": "^2.8.5"
   }
 }
