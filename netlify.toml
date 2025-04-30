@@ -1,0 +1,17 @@
+# Netlify configuration for ParkXiGo
+
+[build]
+  # Directory to change to before starting a build
+  base = "frontend"
+  
+  # Directory that contains the deploy-ready HTML files
+  publish = "dist"
+  
+  # Default build command
+  command = "npm run build"
+
+# Redirects for SPA routing
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
