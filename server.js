@@ -39,7 +39,11 @@ app.get('/', (req, res) => {
       { path: '/auth/login', method: 'POST', description: 'User login' },
       { path: '/auth/register', method: 'POST', description: 'User registration' },
       { path: '/parkingspots', method: 'GET', description: 'Get parking spots' }
-    ]
+    ],
+    adminCredentials: {
+      email: 'admin@parkxigo.com',
+      password: 'admin123'
+    }
   });
 });
 
@@ -56,6 +60,21 @@ app.get('/api/auth/ping', (req, res) => {
 // Auth endpoints - handle both /api/auth/ and /auth/ paths
 const handleLogin = (req, res) => {
   console.log('Login request received:', req.body);
+  
+  // Check if it's the admin credentials
+  if (req.body.email === 'admin@parkxigo.com' && req.body.password === 'admin123') {
+    return res.json({
+      user: {
+        id: 'admin001',
+        name: 'Admin User',
+        email: 'admin@parkxigo.com',
+        role: 'admin'
+      },
+      token: 'admin-token-xyz-12345'
+    });
+  }
+  
+  // Regular user login
   res.json({
     user: {
       id: 'user123',
@@ -85,6 +104,29 @@ const handleRegister = (req, res) => {
 
 app.post('/api/auth/register', handleRegister);
 app.post('/auth/register', handleRegister);
+
+// Admin-only endpoints
+app.get('/api/admin/dashboard', (req, res) => {
+  // Simple auth check (in production, you'd verify the token)
+  const token = req.headers.authorization;
+  if (!token || !token.includes('admin-token')) {
+    return res.status(401).json({ status: 'error', message: 'Admin access required' });
+  }
+  
+  res.json({
+    status: 'ok',
+    stats: {
+      totalUsers: 256,
+      totalParkingSpots: 124,
+      activeBookings: 45,
+      revenue: 12520
+    },
+    recentBookings: [
+      { id: 'b1', userId: 'user123', spotId: 'spot1', amount: 25.99, status: 'active' },
+      { id: 'b2', userId: 'user456', spotId: 'spot2', amount: 15.50, status: 'completed' }
+    ]
+  });
+});
 
 // Mock parking spots handler
 const handleParkingSpots = (req, res) => {
@@ -151,4 +193,5 @@ app.use((req, res) => {
 app.listen(PORT, () => {
   console.log(`ParkXiGo server running on port ${PORT}`);
   console.log('CORS enabled for:', corsOptions.origin.join(', '));
+  console.log('Admin credentials: admin@parkxigo.com / admin123');
 }); 
