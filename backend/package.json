@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node dist/server.js",
     "dev": "ts-node-dev --respawn --transpile-only --ignore-watch node_modules src/server.ts",
-    "build": "npx tsc",
+    "build": "echo 'Starting TypeScript build...' && tsc -p tsconfig.json && echo 'TypeScript build complete'",
     "watch": "tsc -w",
     "clean": "rm -rf dist",
     "update-roles": "ts-node src/scripts/updateUserRoles.ts"
@@ -22,16 +22,16 @@
     "multer": "^1.4.5-lts.1",
     "nodemailer": "^6.10.1",
     "typescript": "^5.3.3",
-    "uuid": "^11.1.0"
-  },
-  "devDependencies": {
+    "uuid": "^11.1.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
     "@types/jsonwebtoken": "^9.0.5",
     "@types/multer": "^1.4.12",
     "@types/node": "^20.11.19",
-    "@types/nodemailer": "^6.4.17",
+    "@types/nodemailer": "^6.4.17"
+  },
+  "devDependencies": {
     "ts-node-dev": "^2.0.0"
   }
 }
