@@ -46,3 +46,6 @@ cypress/screenshots
 
 # Storybook
 storybook-static
+
+# Ignore nested parkxigo repository to avoid submodule issues
+/parkxigo/
