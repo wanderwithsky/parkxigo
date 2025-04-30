@@ -8,8 +8,7 @@
     "dev": "ts-node-dev --respawn --transpile-only --ignore-watch node_modules src/server.ts",
     "build": "tsc",
     "watch": "tsc -w",
-    "clean": "if exist dist rmdir /s /q dist",
-    "prestart": "npm run clean && npm run build",
+    "clean": "rm -rf dist",
     "update-roles": "ts-node src/scripts/updateUserRoles.ts"
   },
   "dependencies": {

@@ -1,4 +1,13 @@
 {
+  "name": "parkxigo",
+  "version": "1.0.0",
+  "description": "A modern parking application",
+  "main": "backend/dist/server.js",
+  "scripts": {
+    "start": "cd backend && npm start",
+    "install": "cd backend && npm install && cd ../frontend && npm install",
+    "build": "cd backend && npm run build"
+  },
   "dependencies": {
     "leaflet": "^1.9.4",
     "react-leaflet": "^5.0.0"
